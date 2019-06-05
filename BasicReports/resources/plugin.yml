@@ -1,0 +1,13 @@
+name: BasicReports
+version: 1.0
+main: me.PietElite.basicReports.BasicReports
+author: PietElite
+description: A reporting plugin for reporting bugs and grief within a server.
+
+commands:
+  report:
+    description: Allows players to report a problem
+    aliases: [r]
+  reports:
+    description: Allows management of logged reports
+    aliases: [rs]

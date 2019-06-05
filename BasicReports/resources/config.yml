@@ -1,0 +1,29 @@
+my_sql_data:
+
+  address: "chi.sql.cubedhost.com"
+  port: 3306
+  database: "gs11437"
+  username: "gs11437"
+  password: "KqVlTq92DWw7BGl"
+  table_name: "REPORTS"
+  
+report_types:
+
+  - "grief"
+  - "info"
+  - "idea"
+  
+debug:
+  
+  dev_mode: true
+  
+  developer: "PietElite"
+  
+  tags:
+    info: "&d[INFO]"
+    severe: "&4[SEVERE]"
+    warning: "&e[WARNING]"
+    
+  description_color: "&7"
+  
+  message_color: "&7"

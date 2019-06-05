@@ -1,0 +1,36 @@
+# Formatting Codes
+# &0 - black
+# &1 - dark blue 
+# &2 - dark green
+# &3 - dark aqua
+# &4 - dark red
+# &5 - dark purple
+# &6 - gold
+# &7 - gray
+# &8 - dark gray
+# &9 - blue
+# &a - green
+# &b - aqua
+# &c - red 
+# &d - light purple
+# &e - yellow
+# &f - white
+
+messages:
+
+  # Use _COMMAND and _PLAYER to input the names of each into the messages
+  
+  no_permission: "&cYou don't have permission to do that!"
+  
+  invalid_arguments: "&cYour arguments are invalid! Try /_COMMAND help."
+  
+  invalid_boolean: "&cThe only allowable states are &6true &cor &6false &c."
+  
+  
+command_help_message:
+
+  # Use _COMMAND, _ARGUMENTS, _USERNAME, and _DESCRIPTION to denote each in these lines
+  
+  first_line: "&e----- &bBasicReports: &f_COMMAND Help &e-----"
+  
+  each_command_line: "&3/_COMMAND _ARGUMENTS &7- _DESCRIPTION"
