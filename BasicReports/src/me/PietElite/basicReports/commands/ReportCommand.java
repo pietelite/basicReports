@@ -62,7 +62,7 @@ public class ReportCommand implements CommandExecutor,TabCompleter {
 					for (String type : getReportTypes()) {
 						reportHelpMap.put(type + " <message>", "Leaves a report for staff");
 					}
-					player.sendMessage(General.chat(reportHelpMap.toChatString(), player.getName(), "Report"));
+					player.sendMessage(General.chat(reportHelpMap.toChatString(), player.getName(), "report"));
 					return true;
 				default:
 					if (args.length <= 1 || !getReportTypes().contains(args[0])) {

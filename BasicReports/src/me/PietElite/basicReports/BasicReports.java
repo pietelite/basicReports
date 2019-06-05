@@ -47,4 +47,8 @@ public class BasicReports extends JavaPlugin {
 	public BasicReportsLogger getBasicReportsLogger() {
 		return basicReportsLogger;
 	}
+
+	public void reloadFiles() {
+		fileManager = FileManager.initialize(this);
+	}
 }

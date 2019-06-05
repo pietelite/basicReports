@@ -1,6 +1,5 @@
 package me.PietElite.basicReports.utils.data;
 
-import java.sql.Array;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -57,7 +56,7 @@ public class DatabaseManager {
 		return instance;
 	}
 	
-	private ResultSet getTable() {
+	public ResultSet getTable() {
 		makeStatement();
 		try {
 			return statement.executeQuery("SELECT * FROM " + dataTableName);
@@ -92,16 +91,14 @@ public class DatabaseManager {
 
 	public boolean add(String playerID, String reportType, String message, Date date, String location, String locationWorld) {
 		makeStatement();
-		// TODO: Add world
-		// TODO: Add id
-		// TODO: Add boolean for if its been checked
+
 		String sqlCommand = "INSERT INTO " + dataTableName 
 				+ " (id, has_checked, player_uuid, report_type, message, date, location, location_world) VALUES "
-				+ "(" + lastReportID + ", "
+				+ "(" + (lastReportID + 1) + ", "
 				+ "0,"
 				+ "'" + playerID + "', "
 				+ "'" + reportType + "', "
-				+ "'" + message + "', "
+				+ "'" + message.replaceAll("'", "''") + "', "
 				+ date.getTime() + ", "
 				+ "'" + location + "', "
 				+ "'" + locationWorld + "');";
@@ -116,6 +113,28 @@ public class DatabaseManager {
 			plugin.getLogger().logp(Level.WARNING, "DatabaseManager", "add", "Report addition failed! Command: " + sqlCommand);
 			return false;
 		}
+	}
+	
+	public void setChecked(int id, int isChecked) {
+		makeStatement();
+		try {
+			statement.executeUpdate("UPDATE " + dataTableName + " SET has_checked = " + isChecked + " WHERE " + "id = " + id + ";");
+		} catch (SQLException e) {
+			plugin.getLogger().logp(Level.WARNING, "DatabaseManager", "setChecked", "An error occured when striking a report");
+			e.printStackTrace();
+		}
+	}
+
+	public void clear() {
+		makeStatement();
+		try {
+			statement.execute("DROP TABLE IF EXISTS " + dataTableName);
+			initialize(plugin);
+		} catch (SQLException e) {
+			plugin.getLogger().logp(Level.WARNING, "DatabaseManager", "clear", "An error occured while clearing the database");
+			e.printStackTrace();
+		}
+		
 	}
 
 	private void makeStatement() {

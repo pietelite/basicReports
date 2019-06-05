@@ -31,6 +31,14 @@ command_help_message:
 
   # Use _COMMAND, _ARGUMENTS, _USERNAME, and _DESCRIPTION to denote each in these lines
   
-  first_line: "&e----- &bBasicReports: &f_COMMAND Help &e-----"
+  first_line: "&e----- &bBasicReports Help: &f_COMMAND &e-----"
   
   each_command_line: "&3/_COMMAND _ARGUMENTS &7- _DESCRIPTION"
+ 
+# Use any of _ID, _USERNAME, _REPORTTYPE, _MESSAGE, _DATE, _LOCATION, and _LOCATIONWORLD
+reports_list_message: "&c_ID. &7[_DATE] &f_USERNAME: &7(&d_REPORTTYPE&7) &f_MESSAGE"
+
+date_format: "dd-MM-yy,HH:mm"
+
+timezone: "EST"
+
