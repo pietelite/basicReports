@@ -1,3 +1,8 @@
+# BasicReports
+# config.yml
+
+# Right now, only sql storage is supported.
+# Input your information for storage below.
 my_sql_data:
 
   address: "chi.sql.cubedhost.com"
@@ -7,23 +12,38 @@ my_sql_data:
   password: "KqVlTq92DWw7BGl"
   table_name: "REPORTS"
   
+# These are the report types you would like players to be able to use as a
+# categorization method for your reports. Add or delete whichever you like.
 report_types:
 
   - "grief"
   - "info"
   - "idea"
+  - "dev"
   
+# Information about how you would like to recieve debugging messages.
 debug:
   
+  # Set this to be true to obtain extra messages about command usage and
+  # backend operations.
+  # This value can be set in-game using "/reports set devmode <true/false>"
+  # But using in-game commands will not change this default value.
   dev_mode: true
   
-  developer: "PietElite"
+  # The players whose usernames you put here will receive the in-game developer
+  # messages.
+  developers: 
+    - "PietElite"
   
+  # These are the used for in-game developer messages. You may customize the
+  # actual label and colors as you wish.
   tags:
     info: "&d[INFO]"
     severe: "&4[SEVERE]"
     warning: "&e[WARNING]"
-    
+  
+  # The color code for the description (source code location) of the devmode log message.
   description_color: "&7"
   
+  # The color code for the main message of the devmode log message.
   message_color: "&7"

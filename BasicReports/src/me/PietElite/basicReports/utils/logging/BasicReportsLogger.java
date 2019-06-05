@@ -1,5 +1,7 @@
 package me.PietElite.basicReports.utils.logging;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,7 +24,7 @@ public class BasicReportsLogger {
 	private String DESCRIPTION_COLOR;
 	private String MESSAGE_COLOR;
 	
-	private Player developer;
+	private List<Player> developers;
 	
 	public boolean isDevmode() {
 		return plugin.getFileManager().getConfigConfig().getBoolean("debug.dev_mode");
@@ -41,12 +43,19 @@ public class BasicReportsLogger {
 		instance.DESCRIPTION_COLOR = plugin.getFileManager().getConfigConfig().getString("debug.description_color");
 		instance.MESSAGE_COLOR = plugin.getFileManager().getConfigConfig().getString("debug.message_color");
 		
-		String developerName = plugin.getFileManager().getConfigConfig().getString("debug.developer");
-		if (developerName == null) {
+		instance.developers = new LinkedList<Player>();
+		List<?> developerNames = plugin.getFileManager().getConfigConfig().getList("debug.developers");
+		if (developerNames == null) {
 			plugin.getLogger().logp(Level.WARNING, "BasicReportsLogger", "initialize", "The developer in config.yml is invalid");
 
-		} else {
-			instance.developer = Bukkit.getPlayer(developerName);
+		}
+		for (Object developerObject : developerNames) {
+			if (!(developerObject instanceof String)) {
+				plugin.getLogger().logp(Level.WARNING, "BasicReportsLogger", "initialize", 
+						"One or more of the developers in config.yml is not in the form of a string");
+				continue;
+			}
+			instance.developers.add(Bukkit.getPlayer((String) developerObject));
 		}
 		
 		
@@ -73,14 +82,15 @@ public class BasicReportsLogger {
 				tag = "&f[" + level.getName().toUpperCase() + "]";
 				break;
 			}
-			
-			if (developer != null && developer.isOnline()) {
-				developer.sendMessage(General.chat(
-						tag +
-						" &7{" + DESCRIPTION_COLOR + sourceClass + ": " + sourceMethod + "&7} " +
-						MESSAGE_COLOR + msg));
+			for (Player developer : developers) {
+				if (developer != null && developer.isOnline()) {
+					developer.sendMessage(General.chat(
+							General.PLUGIN_TAG + " " +
+							tag +
+							" &7{" + DESCRIPTION_COLOR + sourceClass + ": " + sourceMethod + "&7} " +
+							MESSAGE_COLOR + msg));
+				}
 			}
 		}
 	}
-
 }

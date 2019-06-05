@@ -1,3 +1,6 @@
+# BasicReports
+# messages.yml
+
 # Formatting Codes
 # &0 - black
 # &1 - dark blue 
@@ -16,29 +19,44 @@
 # &e - yellow
 # &f - white
 
+# You can customize the messages players receive when these errors are tripped.
+# Use _COMMAND and _PLAYER to input the names of each into the messages.
 messages:
-
-  # Use _COMMAND and _PLAYER to input the names of each into the messages
   
+  # When a player does not have permission to use a BasicReports command.
   no_permission: "&cYou don't have permission to do that!"
   
+  # When a player does not have the correct number of arguments or an argument
+  # is invalid. 
   invalid_arguments: "&cYour arguments are invalid! Try /_COMMAND help."
   
+  # When a player does not use the two options "true" or "false" when a boolean
+  # is queried.
   invalid_boolean: "&cThe only allowable states are &6true &cor &6false &c."
   
-  
+# These messages come up for help board for the BasicReports commands.  
+# Use _COMMAND, _ARGUMENTS, _USERNAME, and _DESCRIPTION to denote each in these lines.
 command_help_message:
 
-  # Use _COMMAND, _ARGUMENTS, _USERNAME, and _DESCRIPTION to denote each in these lines
-  
+  # The introductory line to the command help board.
   first_line: "&e----- &bBasicReports Help: &f_COMMAND &e-----"
   
+  # Each command line which is only visible if the player has permission to use it.
   each_command_line: "&3/_COMMAND _ARGUMENTS &7- _DESCRIPTION"
- 
+
+# This line shows up for every report when listing reports (/reports list)
 # Use any of _ID, _USERNAME, _REPORTTYPE, _MESSAGE, _DATE, _LOCATION, and _LOCATIONWORLD
 reports_list_message: "&c_ID. &7[_DATE] &f_USERNAME: &7(&d_REPORTTYPE&7) &f_MESSAGE"
 
-date_format: "dd-MM-yy,HH:mm"
+# The date format desired when listing reports.
+# dd - day
+# MM - month
+# yy / yyyy - year
+# HH - hour
+# mm - minute
+# SS - second
+date_format: "dd-MM-yyyy,HH:mm"
 
+# The abbreviated timezone you would like the time stamp for reports to appear in.
 timezone: "EST"
 

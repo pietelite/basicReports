@@ -52,7 +52,7 @@ public class ReportCommand implements CommandExecutor,TabCompleter {
 		Player player = (Player) sender;
 		
 		try {
-			if (player.hasPermission("report")) {
+			if (player.hasPermission("BasicReports.report")) {
 				
 				switch (args[0]) {
 				case "?":
@@ -62,11 +62,11 @@ public class ReportCommand implements CommandExecutor,TabCompleter {
 					for (String type : getReportTypes()) {
 						reportHelpMap.put(type + " <message>", "Leaves a report for staff");
 					}
-					player.sendMessage(General.chat(reportHelpMap.toChatString(), player.getName(), "report"));
+					player.sendMessage(General.chat(reportHelpMap.toChatString(), player.getName(), command.getName()));
 					return true;
 				default:
 					if (args.length <= 1 || !getReportTypes().contains(args[0])) {
-						General.sendInvalidArguments(plugin, player, "report");
+						General.sendInvalidArguments(plugin, player, command.getName());
 						return false;
 					} else {
 						String reportMessage = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
@@ -77,12 +77,12 @@ public class ReportCommand implements CommandExecutor,TabCompleter {
 					}
 				}
 			} else {
-				General.sendNoPermission(plugin, player, "report");
+				General.sendNoPermission(plugin, player, command.getName());
 				return false;
 			}
 		} catch (ArrayIndexOutOfBoundsException e) {
 			e.printStackTrace();
-			General.sendInvalidArguments(plugin, player, "report");
+			General.sendInvalidArguments(plugin, player, command.getName());
 			return false;
 		}
 	}

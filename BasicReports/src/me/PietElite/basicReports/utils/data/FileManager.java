@@ -45,10 +45,6 @@ public class FileManager {
 		}
 	}
 	
-	public void reload() {
-		initialize(plugin);
-	}
-	
 	public File getConfigFile() {
 		return configFile;
 	}

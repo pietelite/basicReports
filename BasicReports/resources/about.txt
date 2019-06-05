@@ -1,0 +1,6 @@
+&8-- &6About BasicReports &8--
+&eMod: &7Bukkit/Spigot
+&eVersion: &7_VERSION
+&eDeveloper: &7PietElite
+&eLatest Supported MC Version: &71.14.2
+&eCommands: &7/report, /reports

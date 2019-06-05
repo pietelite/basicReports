@@ -32,6 +32,7 @@ public class DatabaseManager {
 	public static DatabaseManager initialize(BasicReports plugin) {
 		DatabaseManager instance = new DatabaseManager();
 		instance.plugin = plugin;
+		lastReportID = 0;
 		
 		instance.mysqlHost = plugin.getFileManager().getConfigConfig().getString("my_sql_data.address");
 		instance.mysqlPort = plugin.getFileManager().getConfigConfig().getInt("my_sql_data.port");
