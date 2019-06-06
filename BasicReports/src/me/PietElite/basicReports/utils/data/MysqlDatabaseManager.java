@@ -11,11 +11,10 @@ import java.util.UUID;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 
 import me.PietElite.basicReports.BasicReports;
 
-public class DatabaseManager {
+public class MysqlDatabaseManager {
 
 	private static int lastReportID;
 	
@@ -30,8 +29,8 @@ public class DatabaseManager {
 	private Statement statement;
 	private Connection connection;
 	
-	public static DatabaseManager initialize(BasicReports plugin) {
-		DatabaseManager instance = new DatabaseManager();
+	public static MysqlDatabaseManager initialize(BasicReports plugin) {
+		MysqlDatabaseManager instance = new MysqlDatabaseManager();
 		instance.plugin = plugin;
 		lastReportID = 0;
 		

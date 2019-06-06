@@ -5,7 +5,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import me.PietElite.basicReports.commands.ReportCommand;
 import me.PietElite.basicReports.commands.ReportsCommand;
-import me.PietElite.basicReports.utils.data.DatabaseManager;
+import me.PietElite.basicReports.utils.data.MysqlDatabaseManager;
 import me.PietElite.basicReports.utils.data.FileManager;
 import me.PietElite.basicReports.utils.logging.BasicReportsLogger;
 
@@ -14,7 +14,7 @@ public class BasicReports extends JavaPlugin {
 	private FileManager fileManager;
 	private ReportCommand reportCommand;
 	private ReportsCommand reportsCommand;
-	private DatabaseManager databaseManager;
+	private MysqlDatabaseManager databaseManager;
 	private BasicReportsLogger basicReportsLogger;
 	
 	@Override
@@ -30,7 +30,7 @@ public class BasicReports extends JavaPlugin {
 		basicReportsLogger = BasicReportsLogger.initialize(this.getLogger(), this);
 		
 		// Initialize database manager
-		databaseManager = DatabaseManager.initialize(this);
+		databaseManager = MysqlDatabaseManager.initialize(this);
 		// Initialize command executors
 		reportCommand = ReportCommand.initialize(this);
 		reportsCommand = ReportsCommand.initialize(this);
@@ -41,7 +41,7 @@ public class BasicReports extends JavaPlugin {
 		return fileManager;
 	}
 	
-	public DatabaseManager getDatabaseManager() {
+	public MysqlDatabaseManager getDatabaseManager() {
 		return databaseManager;
 	}
 	
