@@ -19,34 +19,31 @@ public class FileManager {
 	private File messagesFile;
 	private FileConfiguration messagesConfig;
 	
-	public static FileManager initialize(BasicReports plugin) {
-		FileManager instance = new FileManager();
+	private void initialize() {
 		
-		instance.plugin = plugin;
-		
-		instance.configFile = new File(plugin.getDataFolder(), "config.yml");
-		instance.configConfig = YamlConfiguration.loadConfiguration(instance.configFile);
-		instance.initializeConfig();
-		
-		instance.messagesFile = new File(plugin.getDataFolder(), "messages.yml");
-		instance.messagesConfig = YamlConfiguration.loadConfiguration(instance.messagesFile);
-		instance.initializeMessages();
-		
-		return instance;
-	}
-	
-	public void initializeConfig() {
+		configFile = new File(plugin.getDataFolder(), "config.yml");
 		if (!configFile.exists()) {
 			plugin.saveResource("config.yml", false);
 		}
-	}
-	
-	public void initializeMessages() {
+		configConfig = YamlConfiguration.loadConfiguration(configFile);
+		
+		messagesFile = new File(plugin.getDataFolder(), "messages.yml");
 		if (!messagesFile.exists()) {
 			plugin.saveResource("messages.yml", false);
 		}
+		messagesConfig = YamlConfiguration.loadConfiguration(messagesFile);
+		
 	}
 	
+	public FileManager(BasicReports plugin) {
+		setPlugin(plugin);
+		this.initialize();
+	}
+	
+	private void setPlugin(BasicReports plugin) {
+		this.plugin = plugin;
+	}
+
 	public File getConfigFile() {
 		return configFile;
 	}

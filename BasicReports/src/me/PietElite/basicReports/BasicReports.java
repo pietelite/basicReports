@@ -1,20 +1,22 @@
 package me.PietElite.basicReports;
 
-import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import me.PietElite.basicReports.commands.ReportCommand;
 import me.PietElite.basicReports.commands.ReportsCommand;
 import me.PietElite.basicReports.utils.data.MysqlDatabaseManager;
+import me.PietElite.basicReports.utils.data.BasicReportsDatabaseManager;
 import me.PietElite.basicReports.utils.data.FileManager;
 import me.PietElite.basicReports.utils.logging.BasicReportsLogger;
 
 public class BasicReports extends JavaPlugin {
 
 	private FileManager fileManager;
+	@SuppressWarnings("unused")
 	private ReportCommand reportCommand;
+	@SuppressWarnings("unused")
 	private ReportsCommand reportsCommand;
-	private MysqlDatabaseManager databaseManager;
+	private BasicReportsDatabaseManager databaseManager;
 	private BasicReportsLogger basicReportsLogger;
 	
 	@Override
@@ -24,24 +26,34 @@ public class BasicReports extends JavaPlugin {
 		this.getDataFolder().mkdirs();
 		
 		// Initialize files
-		fileManager = FileManager.initialize(this);
+		fileManager = new FileManager(this);
 		
 		// Initialize logger
 		basicReportsLogger = BasicReportsLogger.initialize(this.getLogger(), this);
 		
-		// Initialize database manager
-		databaseManager = MysqlDatabaseManager.initialize(this);
+		// Initialize database managers
+		databaseManager = initializeDatabaseManager();
 		// Initialize command executors
 		reportCommand = ReportCommand.initialize(this);
 		reportsCommand = ReportsCommand.initialize(this);
 		
 	}
 	
+	public BasicReportsDatabaseManager initializeDatabaseManager() {
+		String storageType = getFileManager().getConfigConfig().getString("storage_type");
+		switch (storageType) {
+		case "mysql":
+			return new MysqlDatabaseManager(this);
+		default:
+			return new MysqlDatabaseManager(this);
+		}
+	}
+
 	public FileManager getFileManager() {
 		return fileManager;
 	}
 	
-	public MysqlDatabaseManager getDatabaseManager() {
+	public BasicReportsDatabaseManager getDatabaseManager() {
 		return databaseManager;
 	}
 	
@@ -50,6 +62,6 @@ public class BasicReports extends JavaPlugin {
 	}
 
 	public void reloadFiles() {
-		fileManager = FileManager.initialize(this);
+		fileManager = new FileManager(this);
 	}
 }

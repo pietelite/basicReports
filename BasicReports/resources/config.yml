@@ -1,8 +1,11 @@
 # BasicReports
 # config.yml
 
-# Right now, only sql storage is supported.
 # Input your information for storage below.
+# The two options are "mysql". Default is "mysql"
+storage_type: "mysql"
+
+# You only need to fill this out if you chose "mysql"
 my_sql_data:
 
   address: ""

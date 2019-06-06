@@ -15,6 +15,7 @@ import org.bukkit.util.StringUtil;
 import me.PietElite.basicReports.BasicReports;
 import me.PietElite.basicReports.utils.CommandHelpMap;
 import me.PietElite.basicReports.utils.General;
+import me.PietElite.basicReports.utils.data.Report;
 
 public class ReportCommand implements CommandExecutor,TabCompleter {
 
@@ -49,6 +50,17 @@ public class ReportCommand implements CommandExecutor,TabCompleter {
 	
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String alias, String[] args) {
+		
+		if (plugin.getDatabaseManager().hasError()) {
+			String disabledCommandMessage = "This command has been disabled because there is an error in your database.";
+			if (sender instanceof Player) {
+				((Player) sender).sendMessage(General.chat("&c" + disabledCommandMessage));
+			} else {
+				sender.sendMessage(disabledCommandMessage);
+			}
+			return false;
+		}
+		
 		if (!(sender instanceof Player)) {
 			sender.sendMessage("Non-players are not allowed to execute this command");
 			return false;
@@ -75,8 +87,8 @@ public class ReportCommand implements CommandExecutor,TabCompleter {
 						return false;
 					} else {
 						String reportMessage = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
-						plugin.getDatabaseManager().add(player.getUniqueId().toString(), args[0], reportMessage, new Date(), 
-								player.getLocation().toVector().toString(), player.getLocation().getWorld().getName());
+						plugin.getDatabaseManager().addReport(new Report(player, args[0], reportMessage, new Date(), 
+								player.getLocation()));
 						player.sendMessage(General.chat("&fYou reported a &d" + args[0] + "&f type report: &7" + reportMessage));
 						return true;
 					}
