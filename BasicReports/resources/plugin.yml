@@ -11,3 +11,31 @@ commands:
   reports:
     description: Allows management of logged reports
     aliases: [rs]
+
+permissions:
+  BasicReports.report:
+    description: Gives permission to use the report command
+    default: true
+  BasicReports.reports.*:
+    description: Gives permission to use all reports commands
+    default: op
+    children:
+      BasicReports.reports.info:
+        default: op
+      BasicReports.reports.list:
+        default: op
+      BasicReports.reports.listall:
+        default: op
+      BasicReports.reports.reload:
+        default: op
+      BasicReports.reports.resolve:
+        default: op
+      BasicReports.reports.unresolve:
+        default: op
+      BasicReports.reports.clear:
+        default: op
+      BasicReports.reports.set.*:
+        default: op
+        children:
+          BasicReports.reports.set.devmode:
+            default: op

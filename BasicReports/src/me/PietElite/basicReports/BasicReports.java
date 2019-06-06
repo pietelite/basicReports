@@ -1,5 +1,6 @@
 package me.PietElite.basicReports;
 
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import me.PietElite.basicReports.commands.ReportCommand;
@@ -30,10 +31,10 @@ public class BasicReports extends JavaPlugin {
 		
 		// Initialize database manager
 		databaseManager = DatabaseManager.initialize(this);
-		
 		// Initialize command executors
 		reportCommand = ReportCommand.initialize(this);
 		reportsCommand = ReportsCommand.initialize(this);
+		
 	}
 	
 	public FileManager getFileManager() {

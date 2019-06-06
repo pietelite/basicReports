@@ -48,14 +48,15 @@ public class BasicReportsLogger {
 		if (developerNames == null) {
 			plugin.getLogger().logp(Level.WARNING, "BasicReportsLogger", "initialize", "The developer in config.yml is invalid");
 
-		}
-		for (Object developerObject : developerNames) {
-			if (!(developerObject instanceof String)) {
-				plugin.getLogger().logp(Level.WARNING, "BasicReportsLogger", "initialize", 
-						"One or more of the developers in config.yml is not in the form of a string");
-				continue;
+		} else {
+			for (Object developerObject : developerNames) {
+				if (!(developerObject instanceof String)) {
+					plugin.getLogger().logp(Level.WARNING, "BasicReportsLogger", "initialize", 
+							"One or more of the developers in config.yml is not in the form of a string");
+					continue;
+				}
+				instance.developers.add(Bukkit.getPlayer((String) developerObject));
 			}
-			instance.developers.add(Bukkit.getPlayer((String) developerObject));
 		}
 		
 		
@@ -85,7 +86,7 @@ public class BasicReportsLogger {
 			for (Player developer : developers) {
 				if (developer != null && developer.isOnline()) {
 					developer.sendMessage(General.chat(
-							General.PLUGIN_TAG + " " +
+							General.PLUGIN_TAG +
 							tag +
 							" &7{" + DESCRIPTION_COLOR + sourceClass + ": " + sourceMethod + "&7} " +
 							MESSAGE_COLOR + msg));

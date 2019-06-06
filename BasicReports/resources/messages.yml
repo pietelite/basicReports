@@ -20,7 +20,7 @@
 # &f - white
 
 # You can customize the messages players receive when these errors are tripped.
-# Use _COMMAND and _PLAYER to input the names of each into the messages.
+# Use _COMMAND and _USERNAME to input the names of each into the messages.
 messages:
   
   # When a player does not have permission to use a BasicReports command.
@@ -46,7 +46,9 @@ command_help_message:
 
 # This line shows up for every report when listing reports (/reports list)
 # Use any of _ID, _USERNAME, _REPORTTYPE, _MESSAGE, _DATE, _LOCATION, and _LOCATIONWORLD
-reports_list_message: "&c_ID. &7[_DATE] &f_USERNAME: &7(&d_REPORTTYPE&7) &f_MESSAGE"
+reports_list:
+  unresolved: "&c_ID. &7[_DATE] &f_USERNAME: &7(&d_REPORTTYPE&7) &f_MESSAGE"
+  resolved: "&8_ID. [_DATE] _USERNAME: (_REPORTTYPE) _MESSAGE"
 
 # The date format desired when listing reports.
 # dd - day
@@ -58,5 +60,5 @@ reports_list_message: "&c_ID. &7[_DATE] &f_USERNAME: &7(&d_REPORTTYPE&7) &f_MESS
 date_format: "dd-MM-yyyy,HH:mm"
 
 # The abbreviated timezone you would like the time stamp for reports to appear in.
-timezone: "EST"
+timezone: "US/Eastern"
 

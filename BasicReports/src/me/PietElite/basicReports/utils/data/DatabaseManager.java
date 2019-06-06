@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.UUID;
 import java.util.logging.Level;
 
@@ -43,8 +44,13 @@ public class DatabaseManager {
 		
 		instance.generateTable();
 		
-		// Update last id number
-		ResultSet reports = instance.getTable();
+		instance.updateLastReportId();
+		
+		return instance;
+	}
+	
+	public void updateLastReportId() {
+		ResultSet reports = getTable();
 		try {
 			while (reports.next()) {
 				lastReportID = reports.getInt("id");
@@ -52,9 +58,7 @@ public class DatabaseManager {
 		} catch (SQLException e) {
 			e.printStackTrace();
 			plugin.getLogger().logp(Level.SEVERE, "DatabaseManager", "initialize", "Error in trying to find the latest report id number");
-		} catch (NullPointerException e) {
 		}
-		return instance;
 	}
 	
 	public ResultSet getTable() {
@@ -135,7 +139,48 @@ public class DatabaseManager {
 			plugin.getLogger().logp(Level.WARNING, "DatabaseManager", "clear", "An error occured while clearing the database");
 			e.printStackTrace();
 		}
-		
+	}
+	
+	public int removeReports(String condition) {
+		makeStatement();
+		try {
+			int removedReports = 0;
+			removedReports = statement.executeUpdate("DELETE FROM " + dataTableName + " WHERE " + condition + ";");
+			reNumberIds();
+			return removedReports;
+		} catch (SQLException e) {
+			plugin.getLogger().logp(Level.WARNING, "DatabaseManager", "clear", "An error occured while removing reports from the database "
+					+ "with condition " + condition);
+			e.printStackTrace();
+
+		}
+		return 0;
+	}
+	
+	
+	public void reNumberIds() {
+		plugin.getLogger().logp(Level.INFO, "DatabaseManager", "reNumberIds", "run");
+		makeStatement();
+		ResultSet reports = getTable();
+		try {
+			HashMap<Integer, Integer> reportReNumberMap = new HashMap<Integer, Integer>();
+			
+			int count = 0;
+			while (reports.next()) {
+				count++;
+				reportReNumberMap.put(count, reports.getInt("id"));
+			}
+			
+			for (Integer key : reportReNumberMap.keySet()) {
+				plugin.getLogger().logp(Level.INFO, "DatabaseManager", "reNumberIds", 
+						"report with id: " + reportReNumberMap.get(key) + " is being changed to " + key);
+				statement.executeUpdate("UPDATE " + dataTableName + " SET id = " + key + " WHERE id = " + reportReNumberMap.get(key) + ";");
+			}
+			updateLastReportId();
+		} catch (SQLException e) {
+			plugin.getLogger().logp(Level.WARNING, "DatabaseManager", "clear", "An error occured while renumbering the database");
+			e.printStackTrace();
+		}
 	}
 
 	private void makeStatement() {
@@ -163,5 +208,5 @@ public class DatabaseManager {
 			connection = DriverManager.getConnection("jdbc:mysql://" + this.mysqlHost + ":" + this.mysqlPort + "/" + this.mysqlDatabase, this.mysqlUsername, this.mysqlPassword);
 		}
 	}
-	
+
 }

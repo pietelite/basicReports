@@ -1,6 +1,8 @@
 package me.PietElite.basicReports.utils.data;
 
 import java.io.File;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -59,6 +61,19 @@ public class FileManager {
 	
 	public FileConfiguration getMessagesConfig() {
 		return messagesConfig;
+	}
+	
+	public List<String> getReportTypes() {
+		List<?> reportTypes = getConfigConfig().getList("report_types");
+		List<String> output = new LinkedList<String>();
+		
+		for (Object item : reportTypes) {
+			
+			if (item instanceof String) {
+				output.add((String) item);
+			}
+		}
+		return output;
 	}
 
 }

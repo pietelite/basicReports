@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -16,7 +15,6 @@ import org.bukkit.util.StringUtil;
 import me.PietElite.basicReports.BasicReports;
 import me.PietElite.basicReports.utils.CommandHelpMap;
 import me.PietElite.basicReports.utils.General;
-import me.PietElite.basicReports.utils.data.DatabaseManager;
 
 public class ReportCommand implements CommandExecutor,TabCompleter {
 
@@ -33,10 +31,17 @@ public class ReportCommand implements CommandExecutor,TabCompleter {
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
 		
+		List<String> list = new LinkedList<String>();
 		if (args.length == 1) {
-			List<String> list = getReportTypes();
+			list = plugin.getFileManager().getReportTypes();
 			list.add("help");
 			return StringUtil.copyPartialMatches(args[0], list, new LinkedList<String>());
+		}
+		
+		if (args.length == 2 && plugin.getFileManager().getReportTypes().contains(args[0]) && args[1].equals("")) {
+			list.clear();
+			list.add("<message>");
+			return list;
 		}
 		
 		return new LinkedList<String>();
@@ -59,13 +64,13 @@ public class ReportCommand implements CommandExecutor,TabCompleter {
 				case "help":
 					CommandHelpMap reportHelpMap = new CommandHelpMap(plugin);
 					reportHelpMap.put("help", "Displays the possible arguments for the report command");
-					for (String type : getReportTypes()) {
+					for (String type : plugin.getFileManager().getReportTypes()) {
 						reportHelpMap.put(type + " <message>", "Leaves a report for staff");
 					}
 					player.sendMessage(General.chat(reportHelpMap.toChatString(), player.getName(), command.getName()));
 					return true;
 				default:
-					if (args.length <= 1 || !getReportTypes().contains(args[0])) {
+					if (args.length <= 1 || !plugin.getFileManager().getReportTypes().contains(args[0])) {
 						General.sendInvalidArguments(plugin, player, command.getName());
 						return false;
 					} else {
@@ -81,23 +86,9 @@ public class ReportCommand implements CommandExecutor,TabCompleter {
 				return false;
 			}
 		} catch (ArrayIndexOutOfBoundsException e) {
-			e.printStackTrace();
 			General.sendInvalidArguments(plugin, player, command.getName());
 			return false;
 		}
-	}
-	
-	public List<String> getReportTypes() {
-		List<?> reportTypes = plugin.getFileManager().getConfigConfig().getList("report_types");
-		List<String> output = new LinkedList<String>();
-		
-		for (Object item : reportTypes) {
-			
-			if (item instanceof String) {
-				output.add((String) item);
-			}
-		}
-		return output;
 	}
 
 }

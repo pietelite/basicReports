@@ -5,11 +5,11 @@
 # Input your information for storage below.
 my_sql_data:
 
-  address: "chi.sql.cubedhost.com"
+  address: ""
   port: 3306
-  database: "gs11437"
-  username: "gs11437"
-  password: "KqVlTq92DWw7BGl"
+  database: ""
+  username: ""
+  password: ""
   table_name: "REPORTS"
   
 # These are the report types you would like players to be able to use as a
