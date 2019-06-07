@@ -5,16 +5,19 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 
 import com.mysql.jdbc.exceptions.jdbc4.CommunicationsException;
 
 import me.PietElite.basicReports.BasicReports;
+import me.PietElite.basicReports.utils.data.Report.ReportType;
 
 public class MysqlDatabaseManager implements BasicReportsDatabaseManager {
 
@@ -57,15 +60,11 @@ public class MysqlDatabaseManager implements BasicReportsDatabaseManager {
 	}
 
 	private void updateLastReportId() {
-		ResultSet reports = (ResultSet) getData();
-		lastReportId = 0;
-		try {
-			while (reports.next()) {
-				lastReportId = reports.getInt("id");
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-			plugin.getLogger().logp(Level.SEVERE, TAG, "initialize", "Error in trying to find the latest report id number");
+		HashMap<Integer, Report> data = getData();
+		if (data.isEmpty()) {
+			lastReportId = 0;
+		} else {
+			lastReportId = Collections.max(getData().keySet());
 		}
 	}
 
@@ -91,10 +90,24 @@ public class MysqlDatabaseManager implements BasicReportsDatabaseManager {
 	}
 
 	@Override
-	public Object getData() {
+	public HashMap<Integer,Report> getData() {
 		makeStatement();
 		try {
-			return statement.executeQuery("SELECT * FROM " + dataTableName);
+			ResultSet results = statement.executeQuery("SELECT * FROM " + dataTableName);
+			HashMap<Integer,Report> data = new HashMap<Integer,Report>();
+			while (results.next()) {
+				int id = results.getInt("id");
+				data.put(id,new Report(
+						id,
+						Bukkit.getPlayer(UUID.fromString(results.getString("player_uuid"))), 
+						results.getString("report_type"), 
+						results.getString("message"), 
+						(results.getInt("has_checked") == 0) ? false : true, 
+						new Date(results.getLong("date")), 
+						results.getString("location"), 
+						results.getString("location_world")));
+			}
+			return data;
 		} catch (SQLException e) {
 			e.printStackTrace();
 			plugin.getLogger().logp(Level.SEVERE, TAG, "getTable", "Table getter failed!");
@@ -131,41 +144,61 @@ public class MysqlDatabaseManager implements BasicReportsDatabaseManager {
 	}
 
 	@Override
-	public int clearReports(String condition) {
+	public int clearReports(Player player) {
+		int clearedReports = clearReports("player_uuid = '" + player.getUniqueId().toString() + "'");
+		plugin.getBasicReportsLogger().logpDev(Level.INFO, "MysqlDatabaseManager", "clearReports", 
+				"Cleared " + clearedReports + " reports with from player " + player.getName() + ".");
+		return clearedReports;
+	}
+
+	@Override
+	public int clearReports(boolean resolved) {
+		int clearedReports = clearReports("has_checked = " + ((resolved) ? 1 : 0));
+		plugin.getBasicReportsLogger().logpDev(Level.INFO, "MysqlDatabaseManager", "clearReports", 
+				"Cleared " + clearedReports + " " + ((resolved) ? "" : "un") + "resolved reports.");
+		return clearedReports;
+	}
+
+	@Override
+	public int clearReports(ReportType reportType) {
+		int clearedReports = clearReports("report_type = '" + reportType.getName() + "'");
+		plugin.getBasicReportsLogger().logpDev(Level.INFO, "MysqlDatabaseManager", "clearReports", 
+				"Cleared " + clearedReports + " reports under the category " + reportType.getName() + ".");
+		return clearedReports;
+	}
+	
+	/**
+	 * Helper function for all other clearReports methods
+	 * @param sqlCondition
+	 * @return number of cleared reports
+	 */
+	private int clearReports(String sqlCondition) {
 		makeStatement();
 		try {
-			int clearedReports = 0;
-			clearedReports = statement.executeUpdate("DELETE FROM " + dataTableName + " WHERE " + condition + ";");
+			int clearedReports = statement.executeUpdate("DELETE FROM " + dataTableName + " WHERE " + sqlCondition + ";");
 			reNumberReportIds();
 			updateLastReportId();
 			return clearedReports;
 		} catch (SQLException e) {
 			plugin.getLogger().logp(Level.WARNING, TAG, "clearReports", "An error occured while clearing specific reports from the database "
-					+ "with condition " + condition);
+					+ "with condition " + sqlCondition);
 			e.printStackTrace();
-
+			return 0;
 		}
-		return 0;
 	}
 
 	@Override
 	public boolean reNumberReportIds() {
-		plugin.getLogger().logp(Level.INFO, TAG, "reNumberIds", "run");
 		makeStatement();
-		ResultSet reports = (ResultSet) getData();
-		try {
-			HashMap<Integer, Integer> reportReNumberMap = new HashMap<Integer, Integer>();
-			
+		try {			
 			int count = 0;
-			while (reports.next()) {
+			for (int id : getData().keySet()) {
 				count++;
-				reportReNumberMap.put(count, reports.getInt("id"));
-			}
-			
-			for (Integer key : reportReNumberMap.keySet()) {
-				plugin.getLogger().logp(Level.INFO, TAG, "reNumberIds", 
-						"report with id: " + reportReNumberMap.get(key) + " is being changed to " + key);
-				statement.executeUpdate("UPDATE " + dataTableName + " SET id = " + key + " WHERE id = " + reportReNumberMap.get(key) + ";");
+				if (id != count) {
+					plugin.getBasicReportsLogger().logpDev(Level.INFO, TAG, "reNumberIds", 
+							"report with id " + id + " is being updated to " + count);
+					statement.executeUpdate("UPDATE " + dataTableName + " SET id = " + count + " WHERE id = " + id + ";");
+				}
 			}
 			updateLastReportId();
 			return true;
@@ -200,33 +233,6 @@ public class MysqlDatabaseManager implements BasicReportsDatabaseManager {
 			e.printStackTrace();
 			plugin.getLogger().logp(Level.WARNING, TAG, "add", "Report addition failed! Command: " + sqlCommand);
 			return false;
-		}
-	}
-
-	@Override
-	public Report getReport(int id) {
-		makeStatement();
-		try {
-			ResultSet results = statement.executeQuery("SELECT FROM " + dataTableName + " WHERE id = " + id + ";");
-			Report report;
-			if (results.next()) {
-				report = new Report(
-						id,
-						Bukkit.getPlayer(UUID.fromString(results.getString("player_uuid"))), 
-						results.getString("report_type"), 
-						results.getString("message"), 
-						(results.getInt("has_checked") == 0) ? false : true, 
-						new Date(results.getLong("date")), 
-						results.getString("location"), 
-						results.getString("location_world"));
-				return report;
-			} else {
-				return null;
-			}
-		} catch (SQLException e) {
-			plugin.getLogger().logp(Level.WARNING, TAG, "getReport", "An error occured while getting a report from the database. id: " + id);
-			e.printStackTrace();
-			return null;
 		}
 	}
 	

@@ -5,15 +5,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.TimeZone;
-import java.util.UUID;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
@@ -32,9 +28,7 @@ import me.PietElite.basicReports.utils.data.Report;
 public class ReportsCommand implements CommandExecutor, TabCompleter {
 
 	private BasicReports plugin;
-	
-	private ResultSet reports;
-	
+		
 	public static ReportsCommand initialize(BasicReports plugin) {
 		ReportsCommand instance = new ReportsCommand();
 		instance.plugin = plugin;
@@ -66,9 +60,6 @@ public class ReportsCommand implements CommandExecutor, TabCompleter {
 					}
 					if (player.hasPermission("BasicReports.reports.list")) {
 						list.add("list");
-					}
-					if (player.hasPermission("BasicReports.reports.listall")) {
-						list.add("listall");
 					}
 					if (player.hasPermission("BasicReports.reports.reload")) {
 						list.add("reload");
@@ -109,21 +100,49 @@ public class ReportsCommand implements CommandExecutor, TabCompleter {
 					list.clear();
 					return list;
 				case "list":
-					if (player.hasPermission("BasicReports.reports.list")) {
+					if (player.hasPermission("BasicReports.reports.clear")) {
 						if (args.length == 2) {
 							list.clear();
-							for (String reportType : plugin.getFileManager().getReportTypes()) {
-								list.add(reportType);
-							}
+							list.add("help");
+							list.add("all");
+							list.add("type");
+							list.add("player");
+							list.add("resolved");
+							list.add("unresolved");
 							return StringUtil.copyPartialMatches(args[1], list, new LinkedList<String>());
 						}
-					}
-					list.clear();
-					return list;
-				case "listall":
-					if (player.hasPermission("BasicReports.reports.listall")) {
-						list.clear();
-						return list;
+						
+						switch (args[1]) {
+						case "help":
+							list.clear();
+							return list;
+						case "all":
+							list.clear();
+							return list;
+						case "type":
+							if (args.length == 3) {
+								list = plugin.getFileManager().getReportTypes();
+								return StringUtil.copyPartialMatches(args[2], list, new LinkedList<String>());
+							}
+							list.clear();
+							return list;
+						case "user":
+						case "player":
+							if (args.length == 3) {
+								return null;
+							}
+							list.clear();
+							return list;
+						case "resolved":
+							list.clear();
+							return list;
+						case "unresolved":
+							list.clear();
+							return list;
+						default:
+							list.clear();
+							return list;
+						}
 					}
 					list.clear();
 					return list;
@@ -210,8 +229,12 @@ public class ReportsCommand implements CommandExecutor, TabCompleter {
 							return list;
 						case "devmode":
 							if (player.hasPermission("BasicReports.reports.set.devmode")) {
-								list.clear();
-								return list;
+								if (args.length == 3) {
+									list.clear();
+									list.add("true");
+									list.add("false");
+									return StringUtil.copyPartialMatches(args[1], list, new LinkedList<String>());
+								}
 							}
 							list.clear();
 							return list;
@@ -268,10 +291,7 @@ public class ReportsCommand implements CommandExecutor, TabCompleter {
 						reportsHelpMap.put("info", "Checks all the information about a report, given its id");
 					}
 					if (player.hasPermission("BasicReports.reports.list")) {
-						reportsHelpMap.put("list", "Lists all unchecked reports");
-					}
-					if (player.hasPermission("BasicReports.reports.listall")) {
-						reportsHelpMap.put("listall", "Lists all reports");
+						reportsHelpMap.put("list <filter>", "List reports under a given filter.");
 					}
 					if (player.hasPermission("BasicReports.reports.reload")) {
 						reportsHelpMap.put("reload", "Reloads BasicReports files");
@@ -283,10 +303,7 @@ public class ReportsCommand implements CommandExecutor, TabCompleter {
 						reportsHelpMap.put("unresolve <id>", "Marks the report as not resolved, given its id");
 					}
 					if (player.hasPermission("BasicReports.reports.clear")) {
-						reportsHelpMap.put("clear", "Deletes the reports table and generates a new one");
-					}
-					if (player.hasPermission("BasicReports.reports.clear")) {
-						reportsHelpMap.put("clear", "Deletes the reports table and generates a new one");
+						reportsHelpMap.put("clear <filter>", "Deletes reports. Clearing all will delete the database and create a new one.");
 					}
 					if (player.hasPermission("BasicReports.reports.set")) {
 						reportsHelpMap.put("set <args>", "Sets a condition. Try /reports set help");
@@ -312,37 +329,31 @@ public class ReportsCommand implements CommandExecutor, TabCompleter {
 					}
 				case "info":
 					if (player.hasPermission("BasicReports.reports.info")) {
-						ResultSet reports = (ResultSet) plugin.getDatabaseManager().getData();
+						HashMap<Integer,Report> reports = plugin.getDatabaseManager().getData();
 						try {
-							while (reports.next()) {
-								// Finding the correct report and striking it
-								if (Integer.parseInt(args[1]) == reports.getInt("id")) {
-									SimpleDateFormat dateFormat = new SimpleDateFormat(plugin.getFileManager()
-											.getMessagesConfig().getString("date_format"));
-									dateFormat.setTimeZone(TimeZone.getTimeZone(plugin.getFileManager().getMessagesConfig().getString("timezone")));
-									player.sendMessage(General.chat("&7-------" +
-											"\n&3ID: &f" + args[1] +
-											"\n&3Date: &f" + dateFormat.format(new Date(reports.getLong("date"))) +
-											"\n&3Resolved: &f" + ((reports.getInt("has_checked") == 0) ? "false" : "true") +
-											"\n&3Player: &f" + Bukkit.getPlayer(UUID.fromString(reports.getString("player_uuid"))).getName() +
-											"\n&3Type: &f" + reports.getString("report_type") +
-											"\n&3Message: &f" + reports.getString("message") +
-											"\n&3Location: &f" + reports.getString("location") +
-											"\n&3World: &f" + reports.getString("location_world")));
-									return true;
-								}
+							int id = Integer.valueOf(args[1]);
+							if (reports.containsKey(id)) {
+								Report report = reports.get(id);
+								SimpleDateFormat dateFormat = plugin.getFileManager().getDateFormat();
+								dateFormat.setTimeZone(plugin.getFileManager().getTimeZone());
+								player.sendMessage(General.chat("&7-------" +
+										"\n&3ID: &f" + report.getId() +
+										"\n&3Date: &f" + dateFormat.format(report.getDate()) +
+										"\n&3Resolved: &f" + report.isResolved() +
+										"\n&3Player: &f" + report.getPlayer().getName() +
+										"\n&3Type: &f" + report.getType() +
+										"\n&3Message: &f" + report.getMessage() +
+										"\n&3Location: &f" + report.getBlockLocation() +
+										"\n&3World: &f" + report.getLocation().getWorld().getName()));
+								return true;
 							}
 							player.sendMessage(General.chat("&cNo valid report was found with id &6" + args[1] + "&c."));
-							return false;
-						} catch (SQLException e) {
-							plugin.getLogger().logp(Level.WARNING, "ReportsCommand", "onCommand", "Resolving a report did not work correctly");
-							e.printStackTrace();
 							return false;
 						} catch (NumberFormatException e) {
 							player.sendMessage(General.chat("&6" + args[1] + " &cmust be an integer."));
 							return false;
 						} catch (NullPointerException e) {
-							player.sendMessage(General.chat("&cThe player on record can not be identified."));
+							player.sendMessage(General.chat("&cItems on record can not be identified for report with id &6" + args[1] + "&c."));
 							return false;
 						}
 					} else {
@@ -351,80 +362,137 @@ public class ReportsCommand implements CommandExecutor, TabCompleter {
 					}
 				case "list":
 					if (player.hasPermission("BasicReports.reports.list")) {
-						if (args.length == 1) {
-							reports = (ResultSet) plugin.getDatabaseManager().getData();
-							player.sendMessage(General.chat("&8-- &dReport List &8- &4Unresolved &8--"));
-							int rowCount = 0;
-							try {
-								while (reports.next()) {
-									if (reports.getInt("has_checked") == 0) {
-										rowCount++;
-										printReport(player);
-									}
-								}
-								if (rowCount == 0) {
-									player.sendMessage(General.chat("&fThere are no reports at this time"));
-								}
-								return true;
-							} catch (SQLException e) {
-								plugin.getLogger().logp(Level.WARNING, "ReportsCommand", "onCommand", "Listing reports did not work correctly!");
-								e.printStackTrace();
-								return false;
-							}
-						}
 						
-						if (plugin.getFileManager().getReportTypes().contains(args[1])) {
-							reports = (ResultSet) plugin.getDatabaseManager().getData();
-							player.sendMessage(General.chat("&8-- &dReport List &8- &4" + args[1] + " &8--"));
-							int rowCount = 0;
-							try {
-								while (reports.next()) {
-									if (reports.getInt("has_checked") == 0 && reports.getString("report_type").equals(args[1])) {
-										rowCount++;
-										printReport(player);
-									}
-								}
-								if (rowCount == 0) {
-									player.sendMessage(General.chat("&fThere are no reports at this time"));
-								}
+						Collection<Report> reports = plugin.getDatabaseManager().getData().values();
+						
+						boolean matchingReportFound = false;
+						
+						switch (args[1]) {
+						case "help":
+							CommandHelpMap reportsListHelpMap = new CommandHelpMap(plugin);
+							
+							reportsListHelpMap.put("help", "Displays the possible arguments for the '/reports list' command");
+							reportsListHelpMap.put("all", "Displays all reports");
+							reportsListHelpMap.put("player <username>", "Displays all reports left by the designated player");
+							reportsListHelpMap.put("type <type>", "Displays all reports of the designated type");
+							reportsListHelpMap.put("resolved", "Displays all resolved reports");
+							reportsListHelpMap.put("unresolved", "Displays all unresolved reports");
+							
+							player.sendMessage(General.chat(reportsListHelpMap.toChatString(), player.getName(), command.getName()));
+							return true;
+						case "all":
+							
+							if (reports.isEmpty()) {
+								player.sendMessage(General.chat("&eThere are no reports at this time."));
 								return true;
-							} catch (SQLException e) {
-								plugin.getLogger().logp(Level.WARNING, "ReportsCommand", "onCommand", "Listing reports did not work correctly!");
-								e.printStackTrace();
+							}
+							
+							player.sendMessage(General.chat("&8-- &dReport List &8- &4All &8--"));
+							for (Report report : reports) {
+								player.sendMessage(General.chat(Report.printReport(plugin, report)));
+							}
+							return true;
+						case "type":
+							
+							if (reports.isEmpty()) {
+								player.sendMessage(General.chat("&eThere are no reports at this time."));
+								return true;
+							}
+							
+							if (!plugin.getFileManager().getReportTypes().contains(args[2])) {
+								General.sendInvalidArguments(plugin, player, command.getName());
 								return false;
 							}
-						} else {
+							player.sendMessage(General.chat("&8-- &dReport List &8- &4" + args[2] + "&8--"));
+							
+							for (Report report : reports) {
+								if (report.getType().equals(args[2])) {
+									player.sendMessage(General.chat(Report.printReport(plugin, report)));
+									matchingReportFound = true;
+								}
+							}
+							
+							if (!matchingReportFound) {
+								player.sendMessage(General.chat("eNo reports were found with this filter."));
+							}
+							
+							return true;
+						case "user":
+						case "player":
+							
+							if (reports.isEmpty()) {
+								player.sendMessage(General.chat("&eThere are no reports at this time."));
+								return true;
+							}
+							
+							player.sendMessage(General.chat("&8-- &dReport List &8- &4" + args[2] + "&8--"));
+							for (Report report : reports) {
+								if (report.getPlayer().getName().equals(args[2])) {
+									player.sendMessage(General.chat(Report.printReport(plugin, report)));
+									matchingReportFound = true;
+								}
+							}
+							
+							if (!matchingReportFound) {
+								player.sendMessage(General.chat("eNo reports were found with this filter."));
+							}
+							
+							return true;
+						case "resolved":
+							
+							if (reports.isEmpty()) {
+								player.sendMessage(General.chat("&eThere are no reports at this time."));
+								return true;
+							}
+							
+							player.sendMessage(General.chat("&8-- &dReport List &8- &4Resolved &8--"));
+							for (Report report : reports) {
+								if (report.isResolved()) {
+									player.sendMessage(General.chat(Report.printReport(plugin, report)));
+									matchingReportFound = true;
+								}
+							}
+							
+							if (!matchingReportFound) {
+								player.sendMessage(General.chat("eNo reports were found with this filter."));
+							}
+							
+							return true;
+						case "unresolved":
+							
+							if (reports.isEmpty()) {
+								player.sendMessage(General.chat("&eThere are no reports at this time."));
+								return true;
+							}
+							
+							player.sendMessage(General.chat("&8-- &dReport List &8- &4Unresolved &8--"));
+							for (Report report : reports) {
+								if (!report.isResolved()) {
+									player.sendMessage(General.chat(Report.printReport(plugin, report)));
+									matchingReportFound = true;
+								}
+							}
+							
+							if (!matchingReportFound) {
+								player.sendMessage(General.chat("eNo reports were found with this filter."));
+							}
+							
+							return true;
+						default:
 							General.sendInvalidArguments(plugin, player, command.getName());
 							return false;
 						}
+						
 					} else {
 						General.sendNoPermission(plugin, player, command.getName());
 						return false;
 					}
-				case "listall":
-					if (player.hasPermission("BasicReports.reports.listall")) {
-						reports = (ResultSet) plugin.getDatabaseManager().getData();
-						player.sendMessage(General.chat("&8-- &dReport List &8- &4ALL &8--"));
-						int rowCount = 0;
-						try {
-							while (reports.next()) {
-								rowCount++;
-								printReport(player);
-							}
-							if (rowCount == 0) {
-								player.sendMessage(General.chat("&fThere are no reports at this time"));
-							}
-							return true;
-						} catch (SQLException e) {
-							plugin.getLogger().logp(Level.WARNING, "ReportsCommand", "onCommand", "Listing all reports did not work correctly!");
-							e.printStackTrace();
-							return false;
-						}
-					} else {
-						General.sendNoPermission(plugin, player, "reports");
-						return false;
-					}
+
 				case "reload":
+					player.sendMessage(General.chat("&eThe reload command is currently under development.\n"
+							+ "Please restart your server to fully reload BasicReports."));
+					return true;
+					/*
 					if (player.hasPermission("BasicReports.reports.reload")) {
 						plugin.reloadFiles();
 						player.sendMessage(General.chat(General.PLUGIN_TAG + "&aFiles reloaded."));
@@ -435,75 +503,50 @@ public class ReportsCommand implements CommandExecutor, TabCompleter {
 						General.sendNoPermission(plugin, player, "reports");
 						return false;
 					}
+					*/
 				case "resolve":
 					if (player.hasPermission("BasicReports.reports.resolve")) {
-						ResultSet reports = (ResultSet) plugin.getDatabaseManager().getData();
+						HashMap<Integer, Report> reports = plugin.getDatabaseManager().getData();
 						try {
-							boolean reportFound = false;
-							boolean reportNeedsUpdate = false;
-							boolean isReportLeftUnresolved = false;
-							while (reports.next()) {
-								// Finding the correct report and striking it
-								reportNeedsUpdate = reports.getInt("has_checked") == 0;
-								if (Integer.parseInt(args[1]) == reports.getInt("id")) {
-									reportFound = true;
-									if (reportNeedsUpdate) {
-										plugin.getDatabaseManager().setResolved(reports.getInt("id"), true);
-										player.sendMessage(General.chat("&aReport id: &6" + reports.getInt("id") + " &ahas been resolved."));
-									} else {
-										player.sendMessage(General.chat("&cThat report has already been resolved!"));
-									}
-									continue;
-								}
-								
-								// Checking whether this was the last one to strike
-								if (reportNeedsUpdate) {
-									isReportLeftUnresolved = true;
-								}
-							}
-							if (!reportFound) {
+							int id = Integer.valueOf(args[1]);
+							if (!reports.containsKey(id)) {
 								player.sendMessage(General.chat("&cNo valid report was found with id &6" + args[1] + "&c."));
 								return false;
 							}
-							if (!isReportLeftUnresolved) {
-								player.sendMessage(General.chat("&eThere are no more unresolved reports."));
+							if (plugin.getDatabaseManager().setResolved(id, true)) {
+								player.sendMessage(General.chat("&aReport id &6" + id + " &ahas been resolved."));
+								return true;
+							} else {
+								player.sendMessage(General.chat("&cThat report has already been resolved!"));
+								return false;
 							}
-							return true;
-						} catch (SQLException e) {
-							plugin.getLogger().logp(Level.WARNING, "ReportsCommand", "onCommand", "Resolving a report did not work correctly");
-							e.printStackTrace();
-							return false;
 						} catch (NumberFormatException e) {
 							player.sendMessage(General.chat("&6" + args[1] + " &cmust be an integer."));
 							e.printStackTrace();
 							return false;
 						}
 					} else {
-						General.sendNoPermission(plugin, player, "reports");
+						General.sendNoPermission(plugin, player, command.getName());
 						return false;
 					}
 				case "unresolve":
 					if (player.hasPermission("BasicReports.reports.unresolve")) {
-						ResultSet reports = (ResultSet) plugin.getDatabaseManager().getData();
+						HashMap<Integer, Report> reports = plugin.getDatabaseManager().getData();
 						try {
-							while (reports.next()) {
-								if (Integer.parseInt(args[1]) == reports.getInt("id")) {
-									if (reports.getInt("has_checked") == 1) {
-										plugin.getDatabaseManager().setResolved(reports.getInt("id"), false);
-										player.sendMessage(General.chat("&aReport id: &6" + reports.getInt("id") + " &ahas been unresolved."));
-										return true;
-									} else {
-										player.sendMessage(General.chat("&cThat report has not yet been unresolved!"));
-										return false;
-									}
-								}
+							int id = Integer.valueOf(args[1]);
+							if (!reports.containsKey(id)) {
+								player.sendMessage(General.chat("&cNo valid report was found with id &6" + args[1] + "&c."));
+								return false;
 							}
-							player.sendMessage(General.chat("&cNo valid report was found with id &6" + args[1] + "&c."));
-							return false;
-						} catch (SQLException e) {
-							plugin.getLogger().logp(Level.WARNING, "ReportsCommand", "onCommand", "unresolving a report did not work correctly");
-							e.printStackTrace();
-							return false;
+							Report report = reports.get(id);
+							if (report.isResolved()) {
+								plugin.getDatabaseManager().setResolved(id, true);
+								player.sendMessage(General.chat("&aReport id &6" + id + " &ahas been unresolved."));
+								return true;
+							} else {
+								player.sendMessage(General.chat("&cThat report is already unresolved!"));
+								return false;
+							}
 						} catch (NumberFormatException e) {
 							player.sendMessage(General.chat("&6" + args[1] + " &cmust be an integer."));
 							e.printStackTrace();
@@ -535,7 +578,7 @@ public class ReportsCommand implements CommandExecutor, TabCompleter {
 							}
 						case "type":
 							if (plugin.getFileManager().getReportTypes().contains(args[2])) {
-								removedReports = plugin.getDatabaseManager().clearReports("report_type = '" + args[2] + "'");
+								removedReports = plugin.getDatabaseManager().clearReports(new Report.ReportType(args[2]));
 								player.sendMessage(General.chat("&a(&6" + removedReports + "&a) reports were removed with type &6" + args[2] + "&a."));
 								return true;
 							} else {
@@ -549,12 +592,12 @@ public class ReportsCommand implements CommandExecutor, TabCompleter {
 								player.sendMessage(General.chat("&cNo player was found by that username."));
 								return false;
 							} else {
-								removedReports = plugin.getDatabaseManager().clearReports("player_uuid = '" + playerId + "'");
+								removedReports = plugin.getDatabaseManager().clearReports(player);
 								player.sendMessage(General.chat("&a(&6" + removedReports + "&a) reports were removed from player &6" + args[2] + "&a."));
 								return true;
 							}
 						case "resolved":
-							removedReports = plugin.getDatabaseManager().clearReports("has_checked = 1");
+							removedReports = plugin.getDatabaseManager().clearReports(true);
 							player.sendMessage(General.chat("&a(&6" + removedReports + "&a) reports resolved reports were removed."));
 							return true;
 						default:
@@ -619,37 +662,4 @@ public class ReportsCommand implements CommandExecutor, TabCompleter {
 		}
 	}
 	
-	public void printReport(Player player) throws SQLException {
-		SimpleDateFormat dateFormat = new SimpleDateFormat(plugin.getFileManager()
-				.getMessagesConfig().getString("date_format"));
-		dateFormat.setTimeZone(TimeZone.getTimeZone(plugin.getFileManager().getMessagesConfig().getString("timezone")));
-		Report report = new Report(
-				reports.getInt("id"),
-				Bukkit.getPlayer(UUID.fromString(reports.getString("player_uuid"))),
-				reports.getString("report_type"), 
-				reports.getString("message"), 
-				reports.getBoolean("has_checked"),
-				new Date(reports.getLong("date")), 
-				reports.getString("location"), 
-				reports.getString("location_world"));
-		
-		String unformattedMessage;
-		if (report.isResolved()) {
-			unformattedMessage = plugin.getFileManager().getMessagesConfig().getString("reports_list.resolved");
-		} else {
-			unformattedMessage = plugin.getFileManager().getMessagesConfig().getString("reports_list.unresolved");
-		}
-		
-		player.sendMessage(General.chat(unformattedMessage
-				.replaceAll("_ID", String.valueOf(report.getId()))
-				.replaceAll("_REPORTTYPE", report.getType())
-				.replaceAll("_USERNAME", report.getPlayer().getName())
-				.replaceAll("_MESSAGE", report.getMessage())
-				.replaceAll("_DATE", dateFormat.format(report.getDate()))
-				.replaceAll("_LOCATION", String.join(",", Arrays.asList(
-						String.valueOf(report.getLocation().getBlockX()),
-						String.valueOf(report.getLocation().getBlockY()),
-						String.valueOf(report.getLocation().getBlockZ()))))
-				.replaceAll("_LOCATIONWORLD", report.getLocation().getWorld().getName())));
-	}
 }

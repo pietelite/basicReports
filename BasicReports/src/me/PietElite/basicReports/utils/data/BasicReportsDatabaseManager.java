@@ -1,5 +1,9 @@
 package me.PietElite.basicReports.utils.data;
 
+import java.util.HashMap;
+
+import org.bukkit.entity.Player;
+
 import me.PietElite.basicReports.BasicReports;
 
 public interface BasicReportsDatabaseManager {
@@ -12,12 +16,12 @@ public interface BasicReportsDatabaseManager {
 	
 	/**
 	 * Getter for all data held for the reports.
-	 * @return An object which houses all the report data
+	 * @return A hashmap where the Integer is the report's ids and Report is the report corresponding to that id.
 	 */
-	public Object getData();
+	public HashMap<Integer,Report> getData();
 	
 	/**
-	 * Add a report to the database
+	 * Add a report to the database.
 	 * @param playerID The String version of the UUID of the player who sent the report
 	 * @param reportType The report type
 	 * @param message The main body of the report
@@ -29,19 +33,53 @@ public interface BasicReportsDatabaseManager {
 	public boolean addReport(Report report);
 	
 	/**
-	 * Gets a Report object from the database at the first report with the given id
-	 * @param id The id of the report which is to be converted to a Report
-	 * @return A new Report object corresponding with the information in the database
+	 * Set a report as resolved or unresolved in the database.
+	 * @param id the id of the report
+	 * @param isResolved true to set as resolved, false to set as unresolved
+	 * @return whether state was changed
 	 */
-	public Report getReport(int id);
-	
 	public boolean setResolved(int id, boolean isResolved);
 	
+	/**
+	 * Completely clear the entire database.
+	 * @return
+	 */
 	public boolean clearDatabase();
 	
-	public int clearReports(String condition);
+	/**
+	 * Clear reports made by this player. All other reports are then renumbered.
+	 * @param player the player who made the report
+	 * @return the number of cleared reports
+	 */
+	public int clearReports(Player player);
 	
+	/**
+	 * Clear reports which are either resolved or unresolved.
+	 * All other reports are then renumbered.
+	 * @param resolved whether the reports cleared are resolved or unresolved
+	 * @return the number of cleared reports
+	 */
+	public int clearReports(boolean resolved);
+	
+	/**
+	 * Clear reports which have a specific report type.
+	 * @param reportType the wrapper for the type of report to clear
+	 * @return the number of cleared reports
+	 */
+	public int clearReports(Report.ReportType reportType);
+	
+	/**
+	 * Reestablish the id numbers to account for previously cleared reports.
+	 * @return True if successful
+	 */
 	public boolean reNumberReportIds();
 	
+	/**
+	 * Check whether the database has some sort of error preventing normal functions.
+	 * @return True if error exists
+	 */
 	public boolean hasError();
+	
+	
+	
 }

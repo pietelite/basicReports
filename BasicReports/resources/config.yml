@@ -41,12 +41,9 @@ debug:
   # These are the used for in-game developer messages. You may customize the
   # actual label and colors as you wish.
   tags:
-    info: "&d[INFO]"
-    severe: "&4[SEVERE]"
-    warning: "&e[WARNING]"
-  
-  # The color code for the description (source code location) of the devmode log message.
-  description_color: "&7"
+    info: "&d[INFO] "
+    severe: "&4[SEVERE] "
+    warning: "&e[WARNING] "
   
   # The color code for the main message of the devmode log message.
   message_color: "&7"

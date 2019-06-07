@@ -21,7 +21,6 @@ public class BasicReportsLogger {
 	private String TAG_SEVERE;
 	private String TAG_WARNING;
 	
-	private String DESCRIPTION_COLOR;
 	private String MESSAGE_COLOR;
 	
 	private List<Player> developers;
@@ -40,7 +39,6 @@ public class BasicReportsLogger {
 		instance.TAG_SEVERE = plugin.getFileManager().getConfigConfig().getString("debug.tags.severe");
 		instance.TAG_WARNING = plugin.getFileManager().getConfigConfig().getString("debug.tags.warning");
 		
-		instance.DESCRIPTION_COLOR = plugin.getFileManager().getConfigConfig().getString("debug.description_color");
 		instance.MESSAGE_COLOR = plugin.getFileManager().getConfigConfig().getString("debug.message_color");
 		
 		instance.developers = new LinkedList<Player>();
@@ -86,10 +84,7 @@ public class BasicReportsLogger {
 			for (Player developer : developers) {
 				if (developer != null && developer.isOnline()) {
 					developer.sendMessage(General.chat(
-							General.PLUGIN_TAG +
-							tag +
-							" &7{" + DESCRIPTION_COLOR + sourceClass + ": " + sourceMethod + "&7} " +
-							MESSAGE_COLOR + msg));
+							General.PLUGIN_TAG + tag + MESSAGE_COLOR + msg));
 				}
 			}
 		}

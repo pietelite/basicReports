@@ -1,8 +1,10 @@
 package me.PietElite.basicReports.utils.data;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.TimeZone;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -71,6 +73,15 @@ public class FileManager {
 			}
 		}
 		return output;
+	}
+
+	public SimpleDateFormat getDateFormat() {
+		return new SimpleDateFormat(plugin.getFileManager()
+				.getMessagesConfig().getString("date_format"));
+	}
+
+	public TimeZone getTimeZone() {
+		return TimeZone.getTimeZone(plugin.getFileManager().getMessagesConfig().getString("timezone"));
 	}
 
 }

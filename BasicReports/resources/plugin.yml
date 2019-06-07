@@ -24,8 +24,6 @@ permissions:
         default: op
       BasicReports.reports.list:
         default: op
-      BasicReports.reports.listall:
-        default: op
       BasicReports.reports.reload:
         default: op
       BasicReports.reports.resolve:
