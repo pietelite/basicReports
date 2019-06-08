@@ -278,7 +278,8 @@ public class H2DatabaseManager implements BasicReportsDatabaseManager {
 			if (connection != null && !connection.isClosed()) {
 				return;
 			}
-			Class.forName("org.h2.Driver"); 
+			
+			//Class.forName("org.h2.Driver"); 
 			connection = DriverManager.getConnection("jdbc:h2://" + plugin.getDataFolder().getPath());
 		}
 	}
