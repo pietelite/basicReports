@@ -21,6 +21,8 @@ public class FileManager {
 	private File messagesFile;
 	private FileConfiguration messagesConfig;
 	
+	private String reportDataFolderPath;
+	
 	private void initialize() {
 		
 		configFile = new File(plugin.getDataFolder(), "config.yml");
@@ -34,6 +36,9 @@ public class FileManager {
 			plugin.saveResource("messages.yml", false);
 		}
 		messagesConfig = YamlConfiguration.loadConfiguration(messagesFile);
+		
+		setReportDataFolderPath(plugin.getDataFolder().getPath() + "/data");
+		new File(getReportDataFolderPath()).mkdir();
 		
 	}
 	
@@ -82,6 +87,14 @@ public class FileManager {
 
 	public TimeZone getTimeZone() {
 		return TimeZone.getTimeZone(plugin.getFileManager().getMessagesConfig().getString("timezone"));
+	}
+
+	public String getReportDataFolderPath() {
+		return reportDataFolderPath;
+	}
+
+	private void setReportDataFolderPath(String reportDataFolderPath) {
+		this.reportDataFolderPath = reportDataFolderPath;
 	}
 
 }

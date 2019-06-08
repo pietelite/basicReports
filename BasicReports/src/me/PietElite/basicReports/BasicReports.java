@@ -5,7 +5,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import me.PietElite.basicReports.commands.ReportCommand;
 import me.PietElite.basicReports.commands.ReportsCommand;
 import me.PietElite.basicReports.utils.data.MysqlDatabaseManager;
-import me.PietElite.basicReports.utils.data.BasicReportsDatabaseManager;
+import me.PietElite.basicReports.utils.data.BasicReportsDatabaseManagerInterface;
+import me.PietElite.basicReports.utils.data.TxtDatabaseManager;
 import me.PietElite.basicReports.utils.data.FileManager;
 import me.PietElite.basicReports.utils.logging.BasicReportsLogger;
 
@@ -16,14 +17,14 @@ public class BasicReports extends JavaPlugin {
 	private ReportCommand reportCommand;
 	@SuppressWarnings("unused")
 	private ReportsCommand reportsCommand;
-	private BasicReportsDatabaseManager databaseManager;
+	private BasicReportsDatabaseManagerInterface databaseManager;
 	private BasicReportsLogger basicReportsLogger;
 	
 	@Override
 	public void onEnable() {
 		
 		// Make data folder
-		this.getDataFolder().mkdirs();
+		this.getDataFolder().mkdir();
 		
 		// Initialize files
 		fileManager = new FileManager(this);
@@ -39,13 +40,15 @@ public class BasicReports extends JavaPlugin {
 		
 	}
 	
-	public BasicReportsDatabaseManager initializeDatabaseManager() {
+	public BasicReportsDatabaseManagerInterface initializeDatabaseManager() {
 		String storageType = getFileManager().getConfigConfig().getString("storage_type");
 		switch (storageType) {
 		case "mysql":
 			return new MysqlDatabaseManager(this);
+		case "txt":
+			return new TxtDatabaseManager(this);
 		default:
-			return new MysqlDatabaseManager(this);
+			return new TxtDatabaseManager(this);
 		}
 	}
 
@@ -53,7 +56,7 @@ public class BasicReports extends JavaPlugin {
 		return fileManager;
 	}
 	
-	public BasicReportsDatabaseManager getDatabaseManager() {
+	public BasicReportsDatabaseManagerInterface getDatabaseManager() {
 		return databaseManager;
 	}
 	

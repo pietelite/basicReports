@@ -1,5 +1,5 @@
 name: BasicReports
-version: 1.1
+version: 1.2
 main: me.PietElite.basicReports.BasicReports
 author: PietElite
 description: A reporting plugin for reporting bugs and grief within a server.

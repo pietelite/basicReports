@@ -1,0 +1,3 @@
+Changelog
+
+Fixed the "report is too long" message to the correct maximum limit: 100

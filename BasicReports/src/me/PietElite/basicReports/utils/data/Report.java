@@ -32,23 +32,12 @@ public class Report {
 	}
 	
 	public Report(int id, Player player, String type, String message, boolean resolved, Date date, String commaSeparatedBlockLocation, String worldString) {
-		setId(id);
-		setPlayer(player);
-		setType(type);
-		setMessage(message);
-		setResolved(resolved);
-		setDate(date);
+		this(id, player, type, message, resolved, date, null);
 		setLocation(commaSeparatedBlockLocation, worldString);
 	}
 
 	public Report(Player player, String type, String message, Date date, Location location) {
-		setId(-1);
-		setPlayer(player);
-		setType(type);
-		setMessage(message);
-		setResolved(false);
-		setDate(date);
-		setLocation(location);
+		this(-1, player, type, message, false, date, location);
 	}
 
 	public Player getPlayer() {

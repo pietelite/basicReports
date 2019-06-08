@@ -27,6 +27,7 @@ import me.PietElite.basicReports.utils.data.Report;
 
 public class ReportsCommand implements CommandExecutor, TabCompleter {
 
+	private static final String TAG = "ReportsCommand";
 	private BasicReports plugin;
 		
 	public static ReportsCommand initialize(BasicReports plugin) {
@@ -260,7 +261,7 @@ public class ReportsCommand implements CommandExecutor, TabCompleter {
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String alias, String[] args) {
 		
-		if (plugin.getDatabaseManager().hasError()) {
+		if (plugin.getDatabaseManager().isError()) {
 			String disabledCommandMessage = "This command has been disabled because there is an error in your database.";
 			if (sender instanceof Player) {
 				((Player) sender).sendMessage(General.chat("&c" + disabledCommandMessage));
@@ -270,12 +271,22 @@ public class ReportsCommand implements CommandExecutor, TabCompleter {
 			return false;
 		}
 		
+		HashMap<Integer, Report> reportsMap = plugin.getDatabaseManager().getData();
+		
+		if (reportsMap == null) {
+			plugin.getBasicReportsLogger().logpDev(Level.SEVERE, TAG, "onCommand",
+					"An error occured when trying to retrieve data.");
+			plugin.getDatabaseManager().setError(true);
+			return false;
+		}
+		
 		if (!(sender instanceof Player)) {
 			sender.sendMessage("Non-players are not allowed to execute this command");
 			return false;
 		}
 		
 		Player player = (Player) sender;
+		
 		
 		try {
 			if (player.hasPermission("BasicReports.reports")) {
@@ -329,11 +340,10 @@ public class ReportsCommand implements CommandExecutor, TabCompleter {
 					}
 				case "info":
 					if (player.hasPermission("BasicReports.reports.info")) {
-						HashMap<Integer,Report> reports = plugin.getDatabaseManager().getData();
 						try {
 							int id = Integer.valueOf(args[1]);
-							if (reports.containsKey(id)) {
-								Report report = reports.get(id);
+							if (reportsMap.containsKey(id)) {
+								Report report = reportsMap.get(id);
 								SimpleDateFormat dateFormat = plugin.getFileManager().getDateFormat();
 								dateFormat.setTimeZone(plugin.getFileManager().getTimeZone());
 								player.sendMessage(General.chat("&7-------" +
@@ -362,9 +372,7 @@ public class ReportsCommand implements CommandExecutor, TabCompleter {
 					}
 				case "list":
 					if (player.hasPermission("BasicReports.reports.list")) {
-						
 						Collection<Report> reports = plugin.getDatabaseManager().getData().values();
-						
 						boolean matchingReportFound = false;
 						
 						switch (args[1]) {
@@ -380,6 +388,7 @@ public class ReportsCommand implements CommandExecutor, TabCompleter {
 							
 							player.sendMessage(General.chat(reportsListHelpMap.toChatString(), player.getName(), command.getName()));
 							return true;
+						
 						case "all":
 							
 							if (reports.isEmpty()) {
@@ -413,7 +422,7 @@ public class ReportsCommand implements CommandExecutor, TabCompleter {
 							}
 							
 							if (!matchingReportFound) {
-								player.sendMessage(General.chat("eNo reports were found with this filter."));
+								player.sendMessage(General.chat("eNo reports were found under this type."));
 							}
 							
 							return true;
@@ -434,7 +443,7 @@ public class ReportsCommand implements CommandExecutor, TabCompleter {
 							}
 							
 							if (!matchingReportFound) {
-								player.sendMessage(General.chat("eNo reports were found with this filter."));
+								player.sendMessage(General.chat("&eNo reports were found by this player."));
 							}
 							
 							return true;
@@ -454,7 +463,7 @@ public class ReportsCommand implements CommandExecutor, TabCompleter {
 							}
 							
 							if (!matchingReportFound) {
-								player.sendMessage(General.chat("eNo reports were found with this filter."));
+								player.sendMessage(General.chat("&eNo resolved reports were found."));
 							}
 							
 							return true;
@@ -474,7 +483,7 @@ public class ReportsCommand implements CommandExecutor, TabCompleter {
 							}
 							
 							if (!matchingReportFound) {
-								player.sendMessage(General.chat("eNo reports were found with this filter."));
+								player.sendMessage(General.chat("&eNo unresolved reports were found."));
 							}
 							
 							return true;
@@ -506,10 +515,9 @@ public class ReportsCommand implements CommandExecutor, TabCompleter {
 					*/
 				case "resolve":
 					if (player.hasPermission("BasicReports.reports.resolve")) {
-						HashMap<Integer, Report> reports = plugin.getDatabaseManager().getData();
 						try {
 							int id = Integer.valueOf(args[1]);
-							if (!reports.containsKey(id)) {
+							if (!reportsMap.containsKey(id)) {
 								player.sendMessage(General.chat("&cNo valid report was found with id &6" + args[1] + "&c."));
 								return false;
 							}
@@ -531,14 +539,13 @@ public class ReportsCommand implements CommandExecutor, TabCompleter {
 					}
 				case "unresolve":
 					if (player.hasPermission("BasicReports.reports.unresolve")) {
-						HashMap<Integer, Report> reports = plugin.getDatabaseManager().getData();
 						try {
 							int id = Integer.valueOf(args[1]);
-							if (!reports.containsKey(id)) {
+							if (!reportsMap.containsKey(id)) {
 								player.sendMessage(General.chat("&cNo valid report was found with id &6" + args[1] + "&c."));
 								return false;
 							}
-							Report report = reports.get(id);
+							Report report = reportsMap.get(id);
 							if (report.isResolved()) {
 								plugin.getDatabaseManager().setResolved(id, true);
 								player.sendMessage(General.chat("&aReport id &6" + id + " &ahas been unresolved."));
@@ -598,7 +605,7 @@ public class ReportsCommand implements CommandExecutor, TabCompleter {
 							}
 						case "resolved":
 							removedReports = plugin.getDatabaseManager().clearReports(true);
-							player.sendMessage(General.chat("&a(&6" + removedReports + "&a) reports resolved reports were removed."));
+							player.sendMessage(General.chat("&a(&6" + removedReports + "&a) resolved reports were removed."));
 							return true;
 						default:
 							General.sendInvalidArguments(plugin, player, command.getName());

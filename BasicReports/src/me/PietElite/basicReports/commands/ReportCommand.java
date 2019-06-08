@@ -51,7 +51,7 @@ public class ReportCommand implements CommandExecutor,TabCompleter {
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String alias, String[] args) {
 		
-		if (plugin.getDatabaseManager().hasError()) {
+		if (plugin.getDatabaseManager().isError()) {
 			String disabledCommandMessage = "This command has been disabled because there is an error in your database.";
 			if (sender instanceof Player) {
 				((Player) sender).sendMessage(General.chat("&c" + disabledCommandMessage));
@@ -80,6 +80,9 @@ public class ReportCommand implements CommandExecutor,TabCompleter {
 						reportHelpMap.put(type + " <message>", "Leaves a report for staff");
 					}
 					player.sendMessage(General.chat(reportHelpMap.toChatString(), player.getName(), command.getName()));
+					if (plugin.getDatabaseManager().getInfoMessage() != null) {
+						player.sendMessage(General.chat("&e" + plugin.getDatabaseManager().getInfoMessage()));
+					}
 					return true;
 				default:
 					if (args.length <= 1 || !plugin.getFileManager().getReportTypes().contains(args[0])) {
@@ -87,10 +90,18 @@ public class ReportCommand implements CommandExecutor,TabCompleter {
 						return false;
 					} else {
 						String reportMessage = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
-						plugin.getDatabaseManager().addReport(new Report(player, args[0], reportMessage, new Date(), 
-								player.getLocation()));
-						player.sendMessage(General.chat("&fYou reported a &d" + args[0] + "&f type report: &7" + reportMessage));
-						return true;
+						if (reportMessage.length() >= 100) {
+							player.sendMessage(General.chat("&cReports are limited to 100 characters long."));
+							return false;
+						}
+						if (plugin.getDatabaseManager().addReport(new Report(player, args[0], reportMessage, new Date(), 
+								player.getLocation()))) {
+							player.sendMessage(General.chat("&aYou submitted a report!"));
+							return true;
+						} else {
+							player.sendMessage(General.chat("&cSomething went wrong! Check '/report help' for more info."));
+							return false;
+						}
 					}
 				}
 			} else {

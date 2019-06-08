@@ -5,7 +5,6 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.UUID;
@@ -19,12 +18,10 @@ import com.mysql.jdbc.exceptions.jdbc4.CommunicationsException;
 import me.PietElite.basicReports.BasicReports;
 import me.PietElite.basicReports.utils.data.Report.ReportType;
 
-public class MysqlDatabaseManager implements BasicReportsDatabaseManager {
+public class MysqlDatabaseManager extends BasicReportsDatabaseManager implements BasicReportsDatabaseManagerInterface {
 
 	private static final String TAG = "MysqlDatabaseManager";
-	
-	private static int lastReportId;
-	
+		
 	private BasicReports plugin;
 	
 	private String mysqlHost;
@@ -40,7 +37,7 @@ public class MysqlDatabaseManager implements BasicReportsDatabaseManager {
 	public MysqlDatabaseManager(BasicReports plugin) {
 		setPlugin(plugin);
 		
-		lastReportId = 0;
+		setLastReportId(0);
 		
 		mysqlHost = plugin.getFileManager().getConfigConfig().getString("my_sql_data.address");
 		mysqlPort = plugin.getFileManager().getConfigConfig().getInt("my_sql_data.port");
@@ -54,18 +51,9 @@ public class MysqlDatabaseManager implements BasicReportsDatabaseManager {
 					"You have an error in your database manager. Something went wrong!");
 		} else {
 			generateTable();
-			updateLastReportId();
+			updateLastReportId(getData().keySet());
 		}
 		
-	}
-
-	private void updateLastReportId() {
-		HashMap<Integer, Report> data = getData();
-		if (data.isEmpty()) {
-			lastReportId = 0;
-		} else {
-			lastReportId = Collections.max(getData().keySet());
-		}
 	}
 
 	private void generateTable(){
@@ -74,12 +62,12 @@ public class MysqlDatabaseManager implements BasicReportsDatabaseManager {
 			statement.execute("CREATE TABLE IF NOT EXISTS " + dataTableName 
 					+ " ("
 					+ "id INT(7),"
-					+ "has_checked INT(1),"
+					+ "is_resolved INT(1),"
 					+ "player_uuid VARCHAR(63),"
 					+ "report_type VARCHAR(63),"
-					+ "message VARCHAR(63),"
+					+ "message VARCHAR(127),"
 					+ "date BIGINT(15),"
-					+ "location VARCHAR(63),"
+					+ "location_block VARCHAR(63),"
 					+ "location_world VARCHAR(63)"
 					+ ");");
 		} catch (SQLException e) {
@@ -102,9 +90,9 @@ public class MysqlDatabaseManager implements BasicReportsDatabaseManager {
 						Bukkit.getPlayer(UUID.fromString(results.getString("player_uuid"))), 
 						results.getString("report_type"), 
 						results.getString("message"), 
-						(results.getInt("has_checked") == 0) ? false : true, 
+						(results.getInt("is_resolved") == 0) ? false : true, 
 						new Date(results.getLong("date")), 
-						results.getString("location"), 
+						results.getString("location_block"), 
 						results.getString("location_world")));
 			}
 			return data;
@@ -119,7 +107,7 @@ public class MysqlDatabaseManager implements BasicReportsDatabaseManager {
 	public boolean setResolved(int id, boolean isResolved) {
 		makeStatement();
 		try {
-			statement.executeUpdate("UPDATE " + dataTableName + " SET has_checked = " + ((isResolved) ? 1 : 0) + " WHERE " + "id = " + id + ";");
+			statement.executeUpdate("UPDATE " + dataTableName + " SET is_resolved = " + ((isResolved) ? 1 : 0) + " WHERE " + "id = " + id + ";");
 			return true;
 		} catch (SQLException e) {
 			plugin.getLogger().logp(Level.WARNING, TAG, "setChecked", "An error occured when striking a report");
@@ -134,7 +122,7 @@ public class MysqlDatabaseManager implements BasicReportsDatabaseManager {
 		try {
 			statement.execute("DROP TABLE IF EXISTS " + dataTableName);
 			generateTable();
-			updateLastReportId();
+			updateLastReportId(getData().keySet());
 			return true;
 		} catch (SQLException e) {
 			plugin.getLogger().logp(Level.WARNING, TAG, "clearDatabase", "An error occured while clearing the database");
@@ -153,7 +141,7 @@ public class MysqlDatabaseManager implements BasicReportsDatabaseManager {
 
 	@Override
 	public int clearReports(boolean resolved) {
-		int clearedReports = clearReports("has_checked = " + ((resolved) ? 1 : 0));
+		int clearedReports = clearReports("is_resolved = " + ((resolved) ? 1 : 0));
 		plugin.getBasicReportsLogger().logpDev(Level.INFO, "MysqlDatabaseManager", "clearReports", 
 				"Cleared " + clearedReports + " " + ((resolved) ? "" : "un") + "resolved reports.");
 		return clearedReports;
@@ -177,7 +165,7 @@ public class MysqlDatabaseManager implements BasicReportsDatabaseManager {
 		try {
 			int clearedReports = statement.executeUpdate("DELETE FROM " + dataTableName + " WHERE " + sqlCondition + ";");
 			reNumberReportIds();
-			updateLastReportId();
+			updateLastReportId(getData().keySet());
 			return clearedReports;
 		} catch (SQLException e) {
 			plugin.getLogger().logp(Level.WARNING, TAG, "clearReports", "An error occured while clearing specific reports from the database "
@@ -200,7 +188,7 @@ public class MysqlDatabaseManager implements BasicReportsDatabaseManager {
 					statement.executeUpdate("UPDATE " + dataTableName + " SET id = " + count + " WHERE id = " + id + ";");
 				}
 			}
-			updateLastReportId();
+			updateLastReportId(getData().keySet());
 			return true;
 		} catch (SQLException e) {
 			plugin.getLogger().logp(Level.WARNING, TAG, "clear", "An error occured while renumbering the database");
@@ -214,8 +202,8 @@ public class MysqlDatabaseManager implements BasicReportsDatabaseManager {
 		makeStatement();
 
 		String sqlCommand = "INSERT INTO " + dataTableName 
-				+ " (id, has_checked, player_uuid, report_type, message, date, location, location_world) VALUES "
-				+ "(" + (lastReportId + 1) + ", "
+				+ " (id, is_resolved, player_uuid, report_type, message, date, location_block, location_world) VALUES "
+				+ "(" + (getLastReportId() + 1) + ", "
 				+ "0,"
 				+ "'" + report.getPlayer().getUniqueId().toString() + "', "
 				+ "'" + report.getType() + "', "
@@ -225,7 +213,7 @@ public class MysqlDatabaseManager implements BasicReportsDatabaseManager {
 				+ "'" + report.getLocation().getWorld().getName() + "');";
 		try {
 			statement.executeUpdate(sqlCommand);
-			lastReportId++;
+			setLastReportId(getLastReportId() + 1);
 			plugin.getBasicReportsLogger().logpDev(Level.INFO, "DatabaseManager", "add", 
 					report.getPlayer().getName() + " just submitted a " + report.getType() + " report: " + report.getMessage());
 			return true;
@@ -235,8 +223,7 @@ public class MysqlDatabaseManager implements BasicReportsDatabaseManager {
 			return false;
 		}
 	}
-	
-	@Override
+
 	public void setPlugin(BasicReports plugin) {
 		this.plugin = plugin;
 	}
@@ -260,8 +247,13 @@ public class MysqlDatabaseManager implements BasicReportsDatabaseManager {
 	}
 	
 	@Override
-	public boolean hasError() {
+	public boolean isError() {
 		return error;
+	}
+	
+	@Override
+	public void setError(boolean error) {
+		super.setError(error);
 	}
 
 	private void makeStatement() {
@@ -291,6 +283,11 @@ public class MysqlDatabaseManager implements BasicReportsDatabaseManager {
 			Class.forName("com.mysql.jdbc.Driver");
 			connection = DriverManager.getConnection("jdbc:mysql://" + this.mysqlHost + ":" + this.mysqlPort + "/" + this.mysqlDatabase, this.mysqlUsername, this.mysqlPassword);
 		}
+	}
+
+	@Override
+	public String getInfoMessage() {
+		return null;
 	}
 
 }
