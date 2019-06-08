@@ -7,6 +7,7 @@ import me.PietElite.basicReports.commands.ReportsCommand;
 import me.PietElite.basicReports.utils.data.MysqlDatabaseManager;
 import me.PietElite.basicReports.utils.data.BasicReportsDatabaseManager;
 import me.PietElite.basicReports.utils.data.FileManager;
+import me.PietElite.basicReports.utils.data.H2DatabaseManager;
 import me.PietElite.basicReports.utils.logging.BasicReportsLogger;
 
 public class BasicReports extends JavaPlugin {
@@ -44,8 +45,10 @@ public class BasicReports extends JavaPlugin {
 		switch (storageType) {
 		case "mysql":
 			return new MysqlDatabaseManager(this);
+		case "h2":
+			return new H2DatabaseManager(this);
 		default:
-			return new MysqlDatabaseManager(this);
+			return new H2DatabaseManager(this);
 		}
 	}
 

@@ -2,8 +2,8 @@
 # config.yml
 
 # Input your information for storage below.
-# The two options are "mysql". Default is "mysql"
-storage_type: "mysql"
+# The two options are "mysql" and "h2". Default is "h2"
+storage_type: "h2"
 
 # You only need to fill this out if you chose "mysql"
 my_sql_data:
