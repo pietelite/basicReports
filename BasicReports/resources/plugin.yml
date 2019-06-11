@@ -13,27 +13,27 @@ commands:
     aliases: [rs]
 
 permissions:
-  BasicReports.report:
+  basicreports.report:
     description: Gives permission to use the report command
     default: true
-  BasicReports.reports.*:
+  basicreports.reports.*:
     description: Gives permission to use all reports commands
     default: op
     children:
-      BasicReports.reports.info:
-        default: op
-      BasicReports.reports.list:
-        default: op
-      BasicReports.reports.reload:
-        default: op
-      BasicReports.reports.resolve:
-        default: op
-      BasicReports.reports.unresolve:
-        default: op
-      BasicReports.reports.clear:
-        default: op
-      BasicReports.reports.set.*:
-        default: op
+      basicreports.reports.info:
+        default: true
+      basicreports.reports.list:
+        default: true
+      basicreports.reports.reload:
+        default: true
+      basicreports.reports.resolve:
+        default: true
+      basicreports.reports.unresolve:
+        default: true
+      basicreports.reports.clear:
+        default: true
+      basicreports.reports.set.*:
+        default: true
         children:
-          BasicReports.reports.set.devmode:
-            default: op
+          basicreports.reports.set.devmode:
+            default: true

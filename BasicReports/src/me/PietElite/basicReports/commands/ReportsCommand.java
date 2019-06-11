@@ -594,12 +594,12 @@ public class ReportsCommand implements CommandExecutor, TabCompleter {
 							}
 						case "user":
 						case "player":
-							String playerId = Bukkit.getPlayer(args[2]).getUniqueId().toString();
-							if (playerId == null) {
+							Player requestedPlayer = Bukkit.getPlayer(args[2]);
+							if (requestedPlayer == null) {
 								player.sendMessage(General.chat("&cNo player was found by that username."));
 								return false;
 							} else {
-								removedReports = plugin.getDatabaseManager().clearReports(player);
+								removedReports = plugin.getDatabaseManager().clearReports(requestedPlayer);
 								player.sendMessage(General.chat("&a(&6" + removedReports + "&a) reports were removed from player &6" + args[2] + "&a."));
 								return true;
 							}

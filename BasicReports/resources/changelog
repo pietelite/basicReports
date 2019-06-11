@@ -1,3 +1,5 @@
 Changelog
 
 Fixed the "report is too long" message to the correct maximum limit: 100
+Made all the permissions lowercase
+Fixed an issue where the clear-player command cleared the reports of the sender of the command
